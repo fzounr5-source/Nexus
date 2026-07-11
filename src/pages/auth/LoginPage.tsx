@@ -4,6 +4,7 @@ import { User, CircleDollarSign, Building2, LogIn, AlertCircle } from 'lucide-re
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { PasswordStrengthMeter } from '../../components/auth/PasswordStrengthMeter';
 import { UserRole } from '../../types';
 
 export const LoginPage: React.FC = () => {
@@ -12,6 +13,8 @@ export const LoginPage: React.FC = () => {
   const [role, setRole] = useState<UserRole>('entrepreneur');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showOtpStep, setShowOtpStep] = useState(false);
+  const [otp, setOtp] = useState('');
   
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -23,12 +26,21 @@ export const LoginPage: React.FC = () => {
     
     try {
       await login(email, password, role);
-      // Redirect based on user role
-      navigate(role === 'entrepreneur' ? '/dashboard/entrepreneur' : '/dashboard/investor');
+      setShowOtpStep(true);
     } catch (err) {
       setError((err as Error).message);
       setIsLoading(false);
     }
+  };
+
+  const handleOtpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otp.length < 4) {
+      setError('Please enter the 4-digit OTP');
+      return;
+    }
+
+    navigate(role === 'entrepreneur' ? '/dashboard/entrepreneur' : '/dashboard/investor');
   };
   
   // For demo purposes, pre-filled credentials
@@ -71,88 +83,108 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
           
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                I am a
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  className={`py-3 px-4 border rounded-md flex items-center justify-center transition-colors ${
-                    role === 'entrepreneur'
-                      ? 'border-primary-500 bg-primary-50 text-primary-700'
-                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setRole('entrepreneur')}
-                >
-                  <Building2 size={18} className="mr-2" />
-                  Entrepreneur
-                </button>
-                
-                <button
-                  type="button"
-                  className={`py-3 px-4 border rounded-md flex items-center justify-center transition-colors ${
-                    role === 'investor'
-                      ? 'border-primary-500 bg-primary-50 text-primary-700'
-                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setRole('investor')}
-                >
-                  <CircleDollarSign size={18} className="mr-2" />
-                  Investor
-                </button>
+          {showOtpStep ? (
+            <form className="space-y-6" onSubmit={handleOtpSubmit}>
+              <div className="rounded-lg border border-primary-100 bg-primary-50 p-4 text-sm text-primary-700">
+                A 4-digit verification code was sent to your email. Use 1234 for the demo.
               </div>
-            </div>
-            
-            <Input
-              label="Email address"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              fullWidth
-              startAdornment={<User size={18} />}
-            />
-            
-            <Input
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              fullWidth
-            />
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
+              <Input
+                label="Enter OTP"
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                required
+                fullWidth
+              />
+              <Button type="submit" fullWidth leftIcon={<LogIn size={18} />}>
+                Verify & Continue
+              </Button>
+            </form>
+          ) : (
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  I am a
                 </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    className={`py-3 px-4 border rounded-md flex items-center justify-center transition-colors ${
+                      role === 'entrepreneur'
+                        ? 'border-primary-500 bg-primary-50 text-primary-700'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setRole('entrepreneur')}
+                  >
+                    <Building2 size={18} className="mr-2" />
+                    Entrepreneur
+                  </button>
+                  
+                  <button
+                    type="button"
+                    className={`py-3 px-4 border rounded-md flex items-center justify-center transition-colors ${
+                      role === 'investor'
+                        ? 'border-primary-500 bg-primary-50 text-primary-700'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setRole('investor')}
+                  >
+                    <CircleDollarSign size={18} className="mr-2" />
+                    Investor
+                  </button>
+                </div>
               </div>
+              
+              <Input
+                label="Email address"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                fullWidth
+                startAdornment={<User size={18} />}
+              />
+              
+              <Input
+                label="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                fullWidth
+              />
+              <PasswordStrengthMeter password={password} />
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                    Remember me
+                  </label>
+                </div>
 
-              <div className="text-sm">
-                <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
-                  Forgot your password?
-                </a>
+                <div className="text-sm">
+                  <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
+                    Forgot your password?
+                  </a>
+                </div>
               </div>
-            </div>
-            
-            <Button
-              type="submit"
-              fullWidth
-              isLoading={isLoading}
-              leftIcon={<LogIn size={18} />}
-            >
-              Sign in
-            </Button>
-          </form>
+              
+              <Button
+                type="submit"
+                fullWidth
+                isLoading={isLoading}
+                leftIcon={<LogIn size={18} />}
+              >
+                Sign in
+              </Button>
+            </form>
+          )}
           
           <div className="mt-6">
             <div className="relative">

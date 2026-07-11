@@ -3,6 +3,7 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
+import { DashboardTour } from './DashboardTour';
 
 export const DashboardLayout: React.FC = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -27,6 +28,7 @@ export const DashboardLayout: React.FC = () => {
         <Sidebar />
         
         <main className="flex-1 overflow-y-auto p-6">
+          <DashboardTour />
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>

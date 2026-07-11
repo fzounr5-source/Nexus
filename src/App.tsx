@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import CalendarPage from './pages/CalendarPage';
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
@@ -23,17 +25,33 @@ import { EntrepreneursPage } from './pages/entrepreneurs/EntrepreneursPage';
 import { MessagesPage } from './pages/messages/MessagesPage';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
 import { DocumentsPage } from './pages/documents/DocumentsPage';
+import { DocumentChamberPage } from './pages/documents/DocumentChamberPage';
+import { PaymentPage } from './pages/payment/PaymentPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { HelpPage } from './pages/help/HelpPage';
 import { DealsPage } from './pages/deals/DealsPage';
 
 // Chat Pages
 import { ChatPage } from './pages/chat/ChatPage';
+import { VideoCallPage } from './pages/video/VideoCallPage';
 
 function App() {
+  const [demoRole, setDemoRole] = useState<'entrepreneur' | 'investor'>('entrepreneur');
+
   return (
     <AuthProvider>
       <Router>
+        <div className="fixed bottom-4 right-4 z-50 rounded-full border border-gray-200 bg-white px-3 py-2 shadow-md">
+          <label className="mr-2 text-sm font-medium text-gray-700">Role test:</label>
+          <select
+            value={demoRole}
+            onChange={(e) => setDemoRole(e.target.value as 'entrepreneur' | 'investor')}
+            className="rounded border border-gray-300 bg-white px-2 py-1 text-sm"
+          >
+            <option value="entrepreneur">Entrepreneur</option>
+            <option value="investor">Investor</option>
+          </select>
+        </div>
         <Routes>
           {/* Authentication Routes */}
           <Route path="/login" element={<LoginPage />} />
@@ -41,8 +59,12 @@ function App() {
           
           {/* Dashboard Routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route path="entrepreneur" element={<EntrepreneurDashboard />} />
-            <Route path="investor" element={<InvestorDashboard />} />
+            <Route path="entrepreneur" element={demoRole === 'entrepreneur' ? <EntrepreneurDashboard /> : <InvestorDashboard />} />
+            <Route path="investor" element={demoRole === 'investor' ? <InvestorDashboard /> : <EntrepreneurDashboard />} />
+            <Route path="calendar" element={<CalendarPage />} />
+            <Route path="video-call" element={<VideoCallPage />} />
+            <Route path="documents" element={<DocumentChamberPage />} />
+            <Route path="payment" element={<PaymentPage />} />
           </Route>
           
           {/* Profile Routes */}
@@ -83,6 +105,11 @@ function App() {
           <Route path="/deals" element={<DashboardLayout />}>
             <Route index element={<DealsPage />} />
           </Route>
+
+          {/* CALENDAR - Layout hata diya taake seedha dikhe */}
+          <Route path="/calendar" element={<DashboardLayout />}>
+  <Route index element={<CalendarPage />} />
+</Route>
           
           {/* Chat Routes */}
           <Route path="/chat" element={<DashboardLayout />}>
